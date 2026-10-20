@@ -1,0 +1,44 @@
+services:
+  postgres:
+    image: postgres:17
+    container_name: ccdc-postgres
+    restart: unless-stopped
+    env_file:
+      - .env.postgres
+    command:
+      - "postgres"
+      - "-c"
+      - "wal_level=logical"        # required for Debezium
+      - "-c"
+      - "max_wal_senders=10"       # 1 per connector (explicit, future-proof)
+      - "-c"
+      - "max_replication_slots=10" # 1 slot per connector
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./init:/docker-entrypoint-initdb.d   # runs once on a fresh volume
+      - ./data:/data                         # CSV files for initialization
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: ccdc-pgadmin
+    restart: unless-stopped
+    env_file:
+      - .env.pgadmin
+    ports:
+      - "127.0.0.1:5050:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  pgdata:
+  pgadmin_data:
