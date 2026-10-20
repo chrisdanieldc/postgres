@@ -1,0 +1,3 @@
+CREATE DATABASE employees;
+CREATE DATABASE students;
+CREATE DATABASE canada;

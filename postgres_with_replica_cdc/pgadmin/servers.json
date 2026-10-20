@@ -1,0 +1,22 @@
+{
+  "Servers": {
+    "1": {
+      "Name": "Postgres Primary (prod)",
+      "Group": "Servers",
+      "Host": "postgres-primary",
+      "Port": 5432,
+      "MaintenanceDB": "postgres",
+      "Username": "postgres",
+      "SSLMode": "prefer"
+    },
+    "2": {
+      "Name": "Postgres Replica (read)",
+      "Group": "Servers",
+      "Host": "postgres-replica",
+      "Port": 5432,
+      "MaintenanceDB": "postgres",
+      "Username": "postgres",
+      "SSLMode": "prefer"
+    }
+  }
+}
