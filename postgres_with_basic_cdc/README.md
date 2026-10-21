@@ -1,26 +1,55 @@
-# postgres
+# Basic Postgres CDC Setup
 
-Simple PostgreSQL setup with pgAdmin for local development.
+Single Postgres instance configured for change data capture. If you're getting started with CDC or just need a local database that works with Debezium, this is probably what you want.
 
-## What's in here
+## What you get
 
-The compose file spins up two containers - a Postgres 17 instance and pgAdmin. The database is configured for logical replication (needed for change data capture tools like Debezium).
+Two containers: Postgres 17 and pgAdmin. The database runs with `wal_level=logical` so CDC tools can hook into it.
 
-On first startup, it creates three databases (employees, students, and canada) and loads some sample data from CSV files into the first two. The init scripts run automatically when you start with a fresh volume.
+First time you start it, the init scripts create three databases:
+- `employees` - pre-loaded with employee records from CSV
+- `students` - pre-loaded with student data from CSV
+- `testdb` - empty, for whatever you need
 
-pgAdmin is accessible at `localhost:5050` and the database at `localhost:5432`.
+The CSV files are in `data/` and get imported automatically. Scripts in `init/` handle the setup - they only run once when the volume is fresh.
 
-## Quick start
+## Access
+
+- Database: `localhost:5432`
+- pgAdmin: `localhost:5050`
+
+Default credentials are in `.env.postgres` and `.env.pgadmin`.
+
+## Starting up
 
 ```bash
 docker-compose up -d
 ```
 
-To rebuild everything from scratch:
+Check the logs if you want to watch it initialize:
+
+```bash
+docker-compose logs -f postgres
+```
+
+## Resetting everything
+
+Kill the containers and wipe the volumes:
 
 ```bash
 docker-compose down -v
 docker-compose up -d
 ```
 
-The `-v` flag clears the volumes so the init scripts run again.
+This forces the init scripts to run again. Useful when you've made a mess of the test data.
+
+## CDC configuration
+
+The Postgres instance is already configured with:
+- `wal_level=logical`
+- `max_wal_senders=10`
+- `max_replication_slots=10`
+
+These settings let you connect up to 10 CDC connectors (like Debezium) without changing anything. Each connector uses one slot and one sender.
+
+If you're connecting Debezium, point it at `localhost:5432` and it should work out of the box.
